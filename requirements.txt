@@ -28,7 +28,7 @@ loguru==0.7.3
     # via -r requirements.in
 matplotlib==3.10.3
     # via -r requirements.in
-numpy==1.26.4
+numpy==2.2.6
     # via
     #   -r requirements.in
     #   contourpy
