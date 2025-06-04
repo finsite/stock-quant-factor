@@ -22,8 +22,6 @@ def main() -> None:
 
     This service consumes upstream market/fundamental data, computes factor scores,
     and emits ranked signals for downstream use.
-
-
     """
     logger.info("🚀 Starting Factor Strategy Service...")
     consume_messages()
