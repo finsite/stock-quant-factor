@@ -6,11 +6,12 @@ a signal if the score exceeds the configured threshold.
 """
 
 from typing import Any
-from app.logger import setup_logger
+
 from app.config import (
     get_factor_model,
     get_signal_threshold,
 )
+from app.logger import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -27,6 +28,7 @@ def run_factor_analysis(payload: dict[str, Any]) -> dict[str, Any] | None:
         dict or None: Signal object if threshold met, otherwise None.
 
     :param payload: dict[str:
+    :param Any: param payload: dict[str:
     :param Any: 
     :param payload: dict[str: 
     :param Any]: 

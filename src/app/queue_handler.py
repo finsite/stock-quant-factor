@@ -11,10 +11,10 @@ import boto3
 import pika
 from botocore.exceptions import BotoCoreError, NoCredentialsError
 
+from app import config
+from app.factor_engine import run_factor_analysis
 from app.logger import setup_logger
 from app.output_handler import send_to_output
-from app.factor_engine import run_factor_analysis
-from app import config
 
 logger = setup_logger(__name__)
 
@@ -76,7 +76,7 @@ def consume_rabbitmq() -> None:
 
         :param ch: param method:
         :param properties: param body: bytes:
-        :param method: 
+        :param method: param body: bytes:
         :param body: bytes: 
 
         """
