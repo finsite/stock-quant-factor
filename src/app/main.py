@@ -29,6 +29,7 @@ def main() -> None:
     Returns
     -------
 
+
     """
     logger.info("🚀 Starting Factor Strategy Service...")
     consume_messages()

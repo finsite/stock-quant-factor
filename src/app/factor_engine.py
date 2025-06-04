@@ -23,10 +23,6 @@ def run_factor_analysis(payload: dict[str, Any]) -> dict[str, Any] | None:
     ----
         payload (dict): Incoming data including symbol, timestamp, and factor inputs.
 
-    Returns:
-    -------
-        dict or None: Signal object if threshold met, otherwise None.
-
     Parameters
     ----------
     payload :
@@ -37,13 +33,16 @@ def run_factor_analysis(payload: dict[str, Any]) -> dict[str, Any] | None:
         param payload: dict[str:
     Any :
 
-    payload: dict[str :
+    payload : dict[str :
 
     Any] :
+
+    payload: dict[str :
 
 
     Returns
     -------
+
 
     """
     symbol = payload.get("symbol")

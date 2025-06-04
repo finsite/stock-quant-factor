@@ -17,10 +17,6 @@ def analyze_sentiment(data: dict[str, Any]) -> dict[str, Any]:
     ----
         data (dict[str, Any]): A dictionary containing at least a 'headline' or 'content' key.
 
-    Returns:
-    -------
-        dict[str, Any]: Original data with 'sentiment_score' and 'sentiment_label' added.
-
     Parameters
     ----------
     data :
@@ -31,13 +27,16 @@ def analyze_sentiment(data: dict[str, Any]) -> dict[str, Any]:
         param data: dict[str:
     Any :
 
-    data: dict[str :
+    data : dict[str :
 
     Any] :
+
+    data: dict[str :
 
 
     Returns
     -------
+
 
     """
     content = data.get("headline") or data.get("content")
@@ -73,10 +72,6 @@ def classify_sentiment(score: float) -> str:
     ----
         score (float): Polarity score from -1 to 1.
 
-    Returns:
-    -------
-        str: Sentiment label - 'positive', 'neutral', or 'negative'.
-
     Parameters
     ----------
     score :
@@ -85,11 +80,14 @@ def classify_sentiment(score: float) -> str:
         float:
     score :
         float:
+    score : float :
+
     score: float :
 
 
     Returns
     -------
+
 
     """
     if score > 0.1:
