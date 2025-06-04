@@ -18,32 +18,23 @@ logger = setup_logger(__name__)
 
 def run_factor_analysis(payload: dict[str, Any]) -> dict[str, Any] | None:
     """Processes an instrument's feature set and calculates a factor-based score.
-
+    
     Args:
     ----
         payload (dict): Incoming data including symbol, timestamp, and factor inputs.
 
-    Parameters
-    ----------
-    payload :
-        dict[str:
-    Any :
-        param payload: dict[str:
-    Any :
-        param payload: dict[str:
-    Any :
+    :param payload: dict[str:
+    :param Any: param payload: dict[str:
+    :param Any: param payload: dict[str:
+    :param Any: 
+    :param payload: 
+    :type payload: dict[str :
+    :param Any]: 
+    :param payload: 
+    :type payload: dict[str :
+    :param payload: dict[str: 
 
-    payload : dict[str :
-
-    Any] :
-
-    payload: dict[str :
-
-
-    Returns
-    -------
-
-
+    
     """
     symbol = payload.get("symbol")
     timestamp = payload.get("timestamp")
