@@ -1,6 +1,7 @@
 """Module to publish processed analysis data to RabbitMQ or AWS SQS."""
 
 import json
+from typing import Any
 
 import boto3
 import pika
@@ -9,25 +10,15 @@ from botocore.exceptions import BotoCoreError, NoCredentialsError
 from app import config
 from app.logger import setup_logger
 
-# Initialize logger
 logger = setup_logger(__name__)
 
 
-def publish_to_queue(payload: list[dict]) -> None:
-    """Publishes processed candlestick analysis results to RabbitMQ or SQS.
+def publish_to_queue(payload: list[dict[str, Any]]) -> None:
+    """Publishes a list of processed messages to RabbitMQ or SQS.
 
-    :param payload: A list of message payloads to publish.
-    :type payload: list[dict]
-    :param payload: list[dict]:
-    :param payload: list[dict]:
-    :param payload: list[dict]:
-    :param payload: type payload: list[dict] :
-    :param payload: type payload: list[dict] :
-    :param payload: list[dict]:
-    :param payload: list[dict]:
-    :param payload: list[dict]:
-    :param payload: list[dict]:
-
+    Args:
+    ----
+        payload (list[dict[str, Any]]): A list of messages to send.
     """
     queue_type = config.get_queue_type()
 
@@ -37,24 +28,15 @@ def publish_to_queue(payload: list[dict]) -> None:
         elif queue_type == "sqs":
             _send_to_sqs(message)
         else:
-            logger.error("Invalid QUEUE_TYPE specified: %s", queue_type)
+            logger.error("❌ Invalid QUEUE_TYPE specified: %s", queue_type)
 
 
-def _send_to_rabbitmq(data: dict) -> None:
-    """Sends a single message to RabbitMQ using config-based credentials.
+def _send_to_rabbitmq(data: dict[str, Any]) -> None:
+    """Sends a single message to RabbitMQ using credentials from config.
 
-    :param data: The message payload to send.
-    :type data: dict
-    :param data: dict:
-    :param data: dict:
-    :param data: dict:
-    :param data: type data: dict :
-    :param data: type data: dict :
-    :param data: dict:
-    :param data: dict:
-    :param data: dict:
-    :param data: dict:
-
+    Args:
+    ----
+        data (dict[str, Any]): The message payload to send.
     """
     try:
         credentials = pika.PlainCredentials(
@@ -74,28 +56,21 @@ def _send_to_rabbitmq(data: dict) -> None:
             routing_key=config.get_rabbitmq_routing_key(),
             body=json.dumps(data),
         )
+
         channel.close()
         connection.close()
         logger.info("✅ Published message to RabbitMQ")
+
     except Exception as e:
         logger.error("❌ Failed to publish message to RabbitMQ: %s", e)
 
 
-def _send_to_sqs(data: dict) -> None:
+def _send_to_sqs(data: dict[str, Any]) -> None:
     """Sends a single message to AWS SQS using the configured queue.
 
-    :param data: The message payload to send.
-    :type data: dict
-    :param data: dict:
-    :param data: dict:
-    :param data: dict:
-    :param data: type data: dict :
-    :param data: type data: dict :
-    :param data: dict:
-    :param data: dict:
-    :param data: dict:
-    :param data: dict:
-
+    Args:
+    ----
+        data (dict[str, Any]): The message payload to send.
     """
     sqs_url = config.get_sqs_queue_url()
     region = config.get_sqs_region()
@@ -107,7 +82,9 @@ def _send_to_sqs(data: dict) -> None:
             MessageBody=json.dumps(data),
         )
         logger.info("✅ Published message to SQS, MessageId: %s", response["MessageId"])
+
     except (BotoCoreError, NoCredentialsError) as e:
         logger.error("❌ Failed to initialize SQS client: %s", e)
+
     except Exception as e:
         logger.error("❌ Failed to publish message to SQS: %s", e)

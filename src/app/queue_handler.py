@@ -6,10 +6,13 @@ and sends resulting signals to the output handler.
 
 import json
 import time
+from typing import Any
 
 import boto3
 import pika
 from botocore.exceptions import BotoCoreError, NoCredentialsError
+from pika.adapters.blocking_connection import BlockingChannel
+from pika.spec import Basic, BasicProperties
 
 from app import config
 from app.factor_engine import run_factor_analysis
@@ -57,7 +60,7 @@ def connect_to_rabbitmq() -> pika.BlockingConnection:
 
 
 def consume_rabbitmq() -> None:
-    """Consumes messages from RabbitMQ."""
+    """Consumes messages from RabbitMQ and processes them."""
     connection = connect_to_rabbitmq()
     channel = connection.channel()
 
@@ -71,19 +74,13 @@ def consume_rabbitmq() -> None:
         routing_key=config.get_rabbitmq_routing_key(),
     )
 
-    def callback(ch, method, properties, body: bytes) -> None:
-        """:param ch: param method:
-        :param properties: param body: bytes:
-        :param method: param body: bytes:
-        :param body: bytes:
-        :param body: type body: bytes :
-        :param body: type body: bytes :
-        :param body: bytes:
-        :param body: bytes:
-        :param body: bytes:
-        :param body: bytes:
-
-        """
+    def callback(
+        ch: BlockingChannel,
+        method: Basic.Deliver,
+        properties: BasicProperties,
+        body: bytes,
+    ) -> None:
+        """Processes a single message from RabbitMQ."""
         try:
             message = json.loads(body)
             logger.info("📩 Received message: %s", message)
@@ -115,7 +112,7 @@ def consume_rabbitmq() -> None:
 
 
 def consume_sqs() -> None:
-    """Consumes messages from Amazon SQS."""
+    """Consumes messages from Amazon SQS and processes them."""
     if not sqs_client or not config.get_sqs_queue_url():
         logger.error("SQS not initialized or missing queue URL.")
         return
@@ -152,7 +149,7 @@ def consume_sqs() -> None:
 
 
 def consume_messages() -> None:
-    """Starts the appropriate consumer based on QUEUE_TYPE."""
+    """Starts the appropriate consumer based on the QUEUE_TYPE configuration."""
     if config.get_queue_type() == "rabbitmq":
         consume_rabbitmq()
     elif config.get_queue_type() == "sqs":

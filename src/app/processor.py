@@ -1,34 +1,22 @@
-# """Processor module for news sentiment analysis."""
+"""Processor module for sentiment analysis of news content."""
 
-from typing import Any
-
+from typing import Any, cast
 from textblob import TextBlob
+from textblob.sentiments import PatternAnalyzer
 
 from app.logger import setup_logger
 
-# Initialize logger
 logger = setup_logger(__name__)
 
 
 def analyze_sentiment(data: dict[str, Any]) -> dict[str, Any]:
-    """Analyzes sentiment of news content.
+    """Analyzes the sentiment of a news headline or article.
 
     Args:
-    ----
-        data (dict[str, Any]): A dictionary containing at least a 'headline' or 'content' key.
+        data (dict[str, Any]): Input data with 'headline' or 'content'.
 
-    :param data: dict[str:
-    :param Any: param data: dict[str:
-    :param Any: param data: dict[str:
-    :param Any: param data:
-    :param Any: param data:
-    :param data: dict[str:
-    :param data: dict[str:
-    :param Any: param data: dict[str:
-    :param Any:
-    :param data: dict[str:
-    :param Any]:
-
+    Returns:
+        dict[str, Any]: Data enriched with sentiment_score and sentiment_label.
     """
     content = data.get("headline") or data.get("content")
 
@@ -40,7 +28,7 @@ def analyze_sentiment(data: dict[str, Any]) -> dict[str, Any]:
 
     try:
         analysis = TextBlob(content)
-        sentiment: Any = analysis.sentiment  # ✅ Avoid Pyright complaint
+        sentiment = cast(PatternAnalyzer, analysis.analyzer).analyze(content)
         polarity = sentiment.polarity
 
         data["sentiment_score"] = polarity
@@ -48,7 +36,6 @@ def analyze_sentiment(data: dict[str, Any]) -> dict[str, Any]:
 
         logger.info("Sentiment analysis complete: %.2f (%s)", polarity, data["sentiment_label"])
         return data
-
     except Exception as e:
         logger.error("Sentiment analysis failed: %s", e)
         data["sentiment_score"] = None
@@ -57,22 +44,13 @@ def analyze_sentiment(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def classify_sentiment(score: float) -> str:
-    """Classifies polarity score into sentiment label.
+    """Classifies a polarity score into a sentiment label.
 
     Args:
-    ----
-        score (float): Polarity score from -1 to 1.
+        score (float): Sentiment polarity score from -1 to 1.
 
-    :param score: float:
-    :param score: float:
-    :param score: float:
-    :param score: type score: float :
-    :param score: type score: float :
-    :param score: float:
-    :param score: float:
-    :param score: float:
-    :param score: float:
-
+    Returns:
+        str: One of 'positive', 'negative', or 'neutral'.
     """
     if score > 0.1:
         return "positive"

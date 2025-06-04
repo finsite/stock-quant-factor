@@ -7,34 +7,25 @@ a signal if the score exceeds the configured threshold.
 
 from typing import Any
 
-from app.config import (
-    get_factor_model,
-    get_signal_threshold,
-)
+from app.config import get_factor_model, get_signal_threshold
 from app.logger import setup_logger
 
 logger = setup_logger(__name__)
 
 
 def run_factor_analysis(payload: dict[str, Any]) -> dict[str, Any] | None:
-    """Processes an instrument's feature set and calculates a factor-based score.
+    """Processes an instrument's factor inputs and calculates a composite score.
 
     Args:
     ----
-        payload (dict): Incoming data including symbol, timestamp, and factor inputs.
+        payload (dict[str, Any]): Incoming data including:
+            - symbol (str): Instrument identifier
+            - timestamp (str): ISO-8601 timestamp
+            - factors (dict[str, float]): Scores for each factor (e.g., value, momentum, quality)
 
-    :param payload: dict[str:
-    :param Any: param payload: dict[str:
-    :param Any: param payload: dict[str:
-    :param Any: param payload:
-    :param Any: param payload:
-    :param payload: dict[str:
-    :param payload: dict[str:
-    :param Any: param payload: dict[str:
-    :param Any:
-    :param payload: dict[str:
-    :param Any]:
-
+    Returns:
+    -------
+        dict[str, Any] | None: A signal dict if the score exceeds threshold, else None.
     """
     symbol = payload.get("symbol")
     timestamp = payload.get("timestamp")
@@ -49,7 +40,7 @@ def run_factor_analysis(payload: dict[str, Any]) -> dict[str, Any] | None:
 
     logger.debug(f"📊 Using factor model: {model}, Threshold: {threshold}")
 
-    # Simple average for now — can expand to weighted model later
+    # Simple average for now — extendable to weighted model
     score = sum(factors.values()) / len(factors)
 
     logger.debug(f"📈 {symbol} factor score: {score:.4f}")

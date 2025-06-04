@@ -148,3 +148,15 @@ def get_sqs_queue_url() -> str:
 def get_sqs_region() -> str:
     """AWS region of the SQS queue."""
     return get_config_value("SQS_REGION", "us-east-1")
+
+# ------------------------------------------------------------------------------
+# 📦 Repo specific configuration
+# ------------------------------------------------------------------------------
+
+def get_signal_threshold() -> float:
+    """Returns the signal threshold used to determine significant factor scores."""
+    return float(get_config_value("SIGNAL_THRESHOLD", "0.75"))
+
+def get_factor_model() -> str:
+    """Returns the factor model type (e.g., 'equal_weight', 'rank_composite')."""
+    return get_config_value("FACTOR_MODEL", "equal_weight")

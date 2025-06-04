@@ -21,20 +21,9 @@ def send_to_output(data: dict[str, Any]) -> None:
     This includes logging the result, printing to console, and
     sending to RabbitMQ or SQS, unless OUTPUT_MODE is 'log'.
 
-    :param data: The processed analysis result.
-    :type data: dict[str
-    :param data: dict[str:
-    :param Any: param data: dict[str:
-    :param Any: param data: dict[str:
-    :param Any: param data:
-    :param Any: param data:
-    :param data: dict[str:
-    :param data: dict[str:
-    :param Any: param data: dict[str:
-    :param Any:
-    :param data: dict[str:
-    :param Any]:
-
+    Args:
+    ----
+        data (dict[str, Any]): The processed analysis result.
     """
     try:
         formatted_output = json.dumps(data, indent=4)
