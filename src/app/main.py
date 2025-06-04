@@ -24,7 +24,6 @@ def main() -> None:
     and emits ranked signals for downstream use.
 
 
-    
     """
     logger.info("🚀 Starting Factor Strategy Service...")
     consume_messages()
