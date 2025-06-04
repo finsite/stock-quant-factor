@@ -23,6 +23,8 @@ def analyze_sentiment(data: dict[str, Any]) -> dict[str, Any]:
     :param Any: param data:
     :param Any: param data:
     :param data: dict[str:
+    :param data: dict[str:
+    :param Any: 
     :param data: dict[str: 
     :param Any]: 
 
@@ -65,6 +67,7 @@ def classify_sentiment(score: float) -> str:
     :param score: float:
     :param score: type score: float :
     :param score: type score: float :
+    :param score: float:
     :param score: float:
     :param score: float: 
 
