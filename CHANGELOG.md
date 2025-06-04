@@ -7,6 +7,12 @@
 - Initial project structure cloned from template_python
 - Custom configuration and module setup for `stock-quant-factor`
 
+## v0.1.4 (2025-06-04)
+
+### Fix
+
+- **files**: Verify functionality
+
 ## v0.1.3 (2025-06-03)
 
 ### Fix
