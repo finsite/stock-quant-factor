@@ -26,10 +26,11 @@ def run_factor_analysis(payload: dict[str, Any]) -> dict[str, Any] | None:
     -------
         dict or None: Signal object if threshold met, otherwise None.
 
+    :param payload: dict[str:
+    :param Any: 
     :param payload: dict[str: 
     :param Any]: 
 
-    
     """
     symbol = payload.get("symbol")
     timestamp = payload.get("timestamp")
