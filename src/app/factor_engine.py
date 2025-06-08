@@ -26,6 +26,7 @@ def run_factor_analysis(payload: dict[str, Any]) -> dict[str, Any] | None:
     Returns:
     -------
         dict[str, Any] | None: A signal dict if the score exceeds threshold, else None.
+
     """
     symbol = payload.get("symbol")
     timestamp = payload.get("timestamp")
