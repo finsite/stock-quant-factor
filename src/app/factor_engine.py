@@ -30,7 +30,9 @@ def run_factor_analysis(payload: dict[str, Any]) -> dict[str, Any] | None:
     """
     symbol = payload.get("symbol")
     timestamp = payload.get("timestamp")
-    factors = payload.get("factors", {})  # e.g., {"value": 0.8, "momentum": 0.6, "quality": 0.9}
+    factors = payload.get(
+        "factors", {}
+    )  # e.g., {"value": 0.8, "momentum": 0.6, "quality": 0.9}
 
     if not factors or not symbol:
         logger.warning("❌ Missing required factor data or symbol.")
