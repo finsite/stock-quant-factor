@@ -4,7 +4,7 @@ from typing import Any, cast
 from textblob import TextBlob
 from textblob.sentiments import PatternAnalyzer
 
-from app.logger import setup_logger
+from app.utils.setup_logger import setup_logger
 
 logger = setup_logger(__name__)
 

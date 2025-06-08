@@ -1,158 +1,47 @@
-"""Handles message queue consumption for RabbitMQ and SQS.
+"""Module to handle output of analysis results to a chosen output target.
 
-This module receives instrument data, applies factor-based analysis,
-and sends resulting signals to the output handler.
+This implementation logs the result, prints it to stdout, and sends the
+data to RabbitMQ or SQS, unless OUTPUT_MODE is set to 'log'.
 """
 
 import json
-import time
-from typing import Any
+from typing import Any, cast
 
-import boto3
-import pika
-from botocore.exceptions import BotoCoreError, NoCredentialsError
-from pika.adapters.blocking_connection import BlockingChannel
-from pika.spec import Basic, BasicProperties
+from app import config_shared
+from app.queue_sender import publish_to_queue
+from app.utils.setup_logger import setup_logger
+from app.utils.types import OutputMode  # Literal["log", "queue", "stdout", "rest", "s3", "database"]
 
-from app import config
-from app.factor_engine import run_factor_analysis
-from app.logger import setup_logger
-from app.output_handler import send_to_output
-
+# Initialize logger
 logger = setup_logger(__name__)
 
-# Initialize SQS client if needed
-sqs_client = None
-if config.get_queue_type() == "sqs":
+
+def send_to_output(data: dict[str, Any]) -> None:
+    """Outputs processed analysis results to the configured output system.
+
+    This includes logging the result, printing to console, and
+    sending to RabbitMQ or SQS, unless OUTPUT_MODE is 'log'.
+
+    Args:
+        data (dict[str, Any]): The processed analysis result to be output.
+
+    Raises:
+        Exception: Logs and raises unexpected exceptions during processing.
+    """
     try:
-        sqs_client = boto3.client("sqs", region_name=config.get_sqs_region())
-        logger.info(f"SQS client initialized for region {config.get_sqs_region()}")
-    except (BotoCoreError, NoCredentialsError) as e:
-        logger.error("Failed to initialize SQS client: %s", e)
-        sqs_client = None
+        formatted_output: str = json.dumps(data, indent=4)
+        logger.info("Sending data to output:\n%s", formatted_output)
+        print(formatted_output)
 
+        output_mode: OutputMode = cast(OutputMode, config_shared.get_output_mode())
 
-def connect_to_rabbitmq() -> pika.BlockingConnection:
-    """Connects to RabbitMQ with retry logic."""
-    retries = 5
-    while retries > 0:
-        try:
-            credentials = pika.PlainCredentials(
-                username=config.get_rabbitmq_user(),
-                password=config.get_rabbitmq_password(),
-            )
-            conn = pika.BlockingConnection(
-                pika.ConnectionParameters(
-                    host=config.get_rabbitmq_host(),
-                    port=config.get_rabbitmq_port(),
-                    virtual_host=config.get_rabbitmq_vhost(),
-                    credentials=credentials,
-                )
-            )
-            if conn.is_open:
-                logger.info("Connected to RabbitMQ")
-                return conn
-        except Exception as e:
-            retries -= 1
-            logger.warning("RabbitMQ connection failed: %s. Retrying in 5s...", e)
-            time.sleep(5)
-    raise ConnectionError("Could not connect to RabbitMQ after retries")
+        if output_mode == "log":
+            logger.info("🔄 OUTPUT_MODE is 'log'; skipping publish to queue.")
+            return
 
+        publish_to_queue([data])
+        logger.info("✅ Output successfully published to queue.")
 
-def consume_rabbitmq() -> None:
-    """Consumes messages from RabbitMQ and processes them."""
-    connection = connect_to_rabbitmq()
-    channel = connection.channel()
-
-    channel.exchange_declare(
-        exchange=config.get_rabbitmq_exchange(), exchange_type="topic", durable=True
-    )
-    channel.queue_declare(queue=config.get_rabbitmq_queue(), durable=True)
-    channel.queue_bind(
-        exchange=config.get_rabbitmq_exchange(),
-        queue=config.get_rabbitmq_queue(),
-        routing_key=config.get_rabbitmq_routing_key(),
-    )
-
-    def callback(
-        ch: BlockingChannel,
-        method: Basic.Deliver,
-        properties: BasicProperties,
-        body: bytes,
-    ) -> None:
-        """Processes a single message from RabbitMQ."""
-        try:
-            message = json.loads(body)
-            logger.info("📩 Received message: %s", message)
-
-            result = run_factor_analysis(message)
-            if result:
-                result["source"] = "FactorModel"
-                send_to_output(result)
-
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-        except json.JSONDecodeError:
-            logger.error("❌ Invalid JSON: %s", body)
-            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-        except Exception as e:
-            logger.error("❌ Error processing message: %s", e)
-            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
-
-    channel.basic_consume(queue=config.get_rabbitmq_queue(), on_message_callback=callback)
-    logger.info("📡 Waiting for messages from RabbitMQ...")
-
-    try:
-        channel.start_consuming()
-    except KeyboardInterrupt:
-        logger.info("Gracefully stopping RabbitMQ consumer...")
-        channel.stop_consuming()
-    finally:
-        connection.close()
-        logger.info("RabbitMQ connection closed.")
-
-
-def consume_sqs() -> None:
-    """Consumes messages from Amazon SQS and processes them."""
-    if not sqs_client or not config.get_sqs_queue_url():
-        logger.error("SQS not initialized or missing queue URL.")
-        return
-
-    logger.info("📡 Polling for SQS messages...")
-
-    while True:
-        try:
-            response = sqs_client.receive_message(
-                QueueUrl=config.get_sqs_queue_url(),
-                MaxNumberOfMessages=config.get_batch_size(),
-                WaitTimeSeconds=10,
-            )
-
-            for msg in response.get("Messages", []):
-                try:
-                    body = json.loads(msg["Body"])
-                    logger.info("📩 Received SQS message: %s", body)
-
-                    result = run_factor_analysis(body)
-                    if result:
-                        result["source"] = "FactorModel"
-                        send_to_output(result)
-
-                    sqs_client.delete_message(
-                        QueueUrl=config.get_sqs_queue_url(), ReceiptHandle=msg["ReceiptHandle"]
-                    )
-                    logger.info("✅ Deleted SQS message: %s", msg["MessageId"])
-                except Exception as e:
-                    logger.error("❌ Error processing SQS message: %s", e)
-        except Exception as e:
-            logger.error("SQS polling failed: %s", e)
-            time.sleep(config.get_polling_interval())
-
-
-def consume_messages() -> None:
-    """Starts the appropriate consumer based on the QUEUE_TYPE configuration."""
-    if config.get_queue_type() == "rabbitmq":
-        consume_rabbitmq()
-    elif config.get_queue_type() == "sqs":
-        consume_sqs()
-    else:
-        logger.error("Invalid QUEUE_TYPE specified. Use 'rabbitmq' or 'sqs'.")
+    except Exception as e:
+        logger.error("❌ Failed to send output: %s", e)
+        raise

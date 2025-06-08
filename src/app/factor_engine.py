@@ -8,7 +8,7 @@ a signal if the score exceeds the configured threshold.
 from typing import Any
 
 from app.config import get_factor_model, get_signal_threshold
-from app.logger import setup_logger
+from app.utils.setup_logger import setup_logger
 
 logger = setup_logger(__name__)
 
