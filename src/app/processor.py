@@ -36,9 +36,7 @@ def analyze_sentiment(data: dict[str, Any]) -> dict[str, Any]:
         data["sentiment_score"] = polarity
         data["sentiment_label"] = classify_sentiment(polarity)
 
-        logger.info(
-            "Sentiment analysis complete: %.2f (%s)", polarity, data["sentiment_label"]
-        )
+        logger.info("Sentiment analysis complete: %.2f (%s)", polarity, data["sentiment_label"])
         return data
     except Exception as e:
         logger.error("Sentiment analysis failed: %s", e)
