@@ -17,6 +17,7 @@ def get_dlq_name() -> str:
     """Return the Dead Letter Queue (DLQ) name for this poller."""
     return get_config_value("DLQ_NAME", "stock_quant_factor_dlq")
 
+
 def get_factor_model() -> str:
     """Return the factor model to use (e.g., 'fama_french')."""
     return get_config_value("FACTOR_MODEL", "fama_french")
